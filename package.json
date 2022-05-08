@@ -1,0 +1,24 @@
+{
+  "name": "hanro-server",
+  "version": "1.0.0",
+  "description": "Ko-ru dictionary server",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "keywords": [
+    "korean",
+    "dictionary"
+  ],
+  "author": "Eugene Gorbachev",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "sqlite3": "^5.0.8"
+  },
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0"
+  }
+}
