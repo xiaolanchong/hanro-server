@@ -3,6 +3,7 @@ from collections import namedtuple
 from stardictsajeon import StardictRuSajeon
 import sqlite3
 import typing
+from pprint import pprint
 from pathlib import Path
 
 
@@ -67,9 +68,9 @@ incorrect_format_words = {
 форма; вид; облик"""}
 
 
-def get_articles(max_words: int) -> typing.List[SimpleArticle]:
+def get_articles(max_words: int) -> typing.List[typing.Tuple[str, str]]:
     dictionary = StardictRuSajeon()
-    article_list = []
+    article_dict = dict()
     for index, word in enumerate(dictionary.get_all_words()):
         if max_words is not None and index >= max_words:
             break
@@ -78,25 +79,54 @@ def get_articles(max_words: int) -> typing.List[SimpleArticle]:
         else:
             article = dictionary.get_definition(word, add_examples=True)
         sections = article.split('\n\n')
+        word = word.lstrip('-')  # join suffixes '-xxx' with 'xxx'' words
         for order, section in enumerate(sections):
-            article_list.append(SimpleArticle(word=word, order=order, definition=section))
+            stripped_section = '\n'.join(line.rstrip() for line in section.split('\n'))
+            article_dict.setdefault(word, []).append(stripped_section)
 
-    return article_list
+    sorted_keys = article_dict.keys()
+    sorted_keys = sorted(sorted_keys)
+    return [(word, '\n\n'.join(article_dict[word])) for word in sorted_keys]
 
 
 def dump_to_db(article_list: typing.List[SimpleArticle]):
     dict_path = Path('./../../../hanro-dict.db')
     bot_id = 2
     checked = False
-    visible = False
+    hidden = True
     now = datetime.utcnow()
     with sqlite3.connect(str(dict_path.absolute())) as con:
-        data = ((article.word, article.order, article.definition, now, bot_id, checked, visible)
+        data = ((article.word, article.order, article.definition, now, bot_id, checked, hidden)
                 for article in article_list)
         con.executemany("insert into word(word, 'order', definition, last_edited, last_edited_by_user, "
-                        "checked, visible) "
+                        "checked, hidden) "
                         "values (?, ?, ?, ?, ?, ?, ?)", data)
 
 
-articles = get_articles(10000)
-dump_to_db(articles)
+def dump_one_article_per_word(article_list: typing.List[typing.Tuple[str, str]]):
+    dict_path = Path('./../../../hanro-dict.db')
+    bot_id = 2
+    checked = False
+    hidden = True
+    now = datetime.utcnow()
+    with sqlite3.connect(str(dict_path.absolute())) as con:
+        data = ((article[0], 0, article[1], now, bot_id, checked, hidden)
+                for article in article_list)
+        con.executemany("insert into word(word, 'order', definition, last_edited, last_edited_by_user, "
+                        "checked, hidden) "
+                        "values (?, ?, ?, ?, ?, ?, ?)", data)
+
+
+def dump_to_term(articles):
+    with open('dalma-dict.txt', mode='w', encoding='utf8') as f:
+        for article in articles:
+            #f.write(article[0])
+            #f.write('\n')
+            f.write(article[1])
+            f.write('\n\n')
+
+
+articles = get_articles(None)
+#pprint(articles)
+#dump_one_article_per_word(articles)
+dump_to_file(articles)

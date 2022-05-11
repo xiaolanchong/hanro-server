@@ -1,4 +1,6 @@
 
+const textUtils = require('../storage/textUtils')
+
 let storage
 
 function init(usedStorage) {
@@ -23,8 +25,13 @@ async function getWords(req, res) {
         res.status(400).send("'offset' query parameter mast be integer")
         return
     }
-    const words = await storage.getWords(req.params.startWith, offset, limit);
-    res.send(words);
+    const startWith = req.params.startWith
+    const words = await storage.getWords(startWith, offset, limit)
+    const startWithLetter = textUtils.getStartingLetter(startWith)
+    res.send({
+        words: words,
+        startWithLetter: startWithLetter,
+    });
 }
 
 async function getWord(req, res) {

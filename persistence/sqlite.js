@@ -38,6 +38,7 @@ async function getDistinctWords(startWith, offset, limit) {
         } else {
             const command ="SELECT DISTINCT word FROM word " + 
             "WHERE word LIKE $pattern OR word LIKE $suffix_pattern " +
+            "ORDER BY word ASC " +
             "LIMIT $limit OFFSET $offset"
             const params = {
                 $pattern: `${startWith}%`,
