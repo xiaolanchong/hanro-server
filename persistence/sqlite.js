@@ -129,6 +129,33 @@ function createSessionStore(session) {
     return new SQLiteStore(params)
 }
 
+const errorDescs = new Map([
+    ['SQLITE_CONSTRAINT', 'User already exists']
+])
+
+async function createUser(username, password_hash, email) {
+    return new Promise((acc, rej) => {
+        const USER = 0
+        const defaultRole = USER
+        db.run(
+            'INSERT INTO user(username, email, password_hash, role) VALUES(?, ?, ?, ?)', [username, email, password_hash, defaultRole],
+            function(err) {
+                if (err) {
+                    console.log(err)
+                    return rej(errorDescs.has(err.code) ? errorDescs.get(err.code): 'Database error')
+                }
+                const user = { 
+                    id: this.lastID,
+                    username: username,
+                    email: email,
+                    role: defaultRole,
+                }
+                acc(user);
+            },
+        );
+    });    
+}
+
 /*
 async function removeItem(id) {
     return new Promise((acc, rej) => {
@@ -151,5 +178,6 @@ module.exports = {
     getUser,
     getUserById,
     createSessionStore,
+    createUser,
    // removeItem,
 };

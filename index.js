@@ -13,28 +13,37 @@ app.use(passport.initialize())
 authServer.initOnStart(app, passport, db)
 app.use(passport.session())
 
+const UNAUTHORIZED = 401
+
+/// Converts logic level user to that seen by app clients
+function toExternalUser(user) {
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+  }
+}
 
 app.post('/api/login',
   passport.authenticate('local', { failWithError: true, session: true }),
   function(req, res, next) {
     // Successful auth
+    const user = req.user
     return res.send({ 
         success: true,
         message: 'Logged in',
-        username: user.username,
-        email: user.email,
-        role: user.role,
+        ...toExternalUser(user),
     })
   },
   function(err, req, res, next) {
     // Auth error
-    return res.status(401).send({ success: false, message: err })
+    return res.status(UNAUTHORIZED).send({ success: false, message: err })
   }
 )
 
 function mustBeAuthenticated(req, res, next) {
     if (!req.isAuthenticated()) {
-        const UNAUTHORIZED = 401
         return res.status(UNAUTHORIZED).send({});
     }
     next();
@@ -43,7 +52,25 @@ function mustBeAuthenticated(req, res, next) {
 app.post('/api/logout', mustBeAuthenticated, (req, res) => {
     req.logOut()
     res.send({})
-});
+})
+
+app.post('/api/register',
+  passport.authenticate('register', { failWithError: true, session: true }),
+  function(req, res, next) {
+    // Successful auth
+    const user = req.user
+    return res.send({ 
+        success: true,
+        message: 'Registered',
+        ...toExternalUser(user),
+    })
+  },
+  function(err, req, res, next) {
+    // Auth error
+    return res.status(UNAUTHORIZED).send({ success: false, message: err })
+  }
+)
+
 
 app.get('/api/index', routes.getIndex)
 app.get('/api/index/:startWith', routes.getIndex)
@@ -51,14 +78,13 @@ app.get('/api/words/:startWith', routes.getWords)
 app.get('/api/word/:word', routes.getWord)
 
 app.get('/api/getUserInfo', (req, res) => {
-    if (req.user !== undefined)
+    if (req.user !== undefined) {
+        const user = req.user
         res.send({
-            username: req.user.username,
-            email: req.user.email,
-            role: req.user.role,
+          ...toExternalUser(user),
         })
-    else
-        res.status(401)
+      } else
+        res.status(UNAUTHORIZED)
 })
 
 const port = process.env.PORT || 3500

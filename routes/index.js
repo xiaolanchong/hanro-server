@@ -17,11 +17,11 @@ async function getWords(req, res) {
     const limit = parseInt(limitStr)
     const offset = parseInt(offsetStr)
     if(isNaN(limit)) {
-        res.status(400).send("'limit' query parameter mast be integer")
+        res.status(400).send("'limit' query parameter must be integer")
         return
     }
     if(isNaN(offset)) {
-        res.status(400).send("'offset' query parameter mast be integer")
+        res.status(400).send("'offset' query parameter must be integer")
         return
     }
     const startWith = req.params.startWith
