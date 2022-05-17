@@ -1,4 +1,3 @@
-
 const textUtils = require('../storage/textUtils')
 
 let storage
@@ -36,8 +35,8 @@ async function getWords(req, res) {
 
 async function getWord(req, res) {
     const limit = 50
-    const definitions = await storage.getWordDefinitions(req.params.word, limit);
-    res.send(definitions);  
+    const definitions = await storage.getWordDefinitions(req.params.word, limit)
+    res.send(definitions)
 }
 
 module.exports = {

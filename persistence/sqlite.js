@@ -1,5 +1,6 @@
 const sqlite3 = require('sqlite3').verbose()
 const fs = require('fs')
+const sessionDbDir = __dirname + '/../..'
 const location = process.env.SQLITE_DB_LOCATION || __dirname + '/../../hanro-dict.db'
 
 let db;
@@ -102,6 +103,32 @@ async function updateWord(id, definition, user_id) {
     });
 } 
 
+function getUser(username, callback) {
+    db.all('SELECT * FROM user WHERE username = ? LIMIT 1', [ username ], 
+        function(err, users) {
+            callback(err, users[0])
+        }
+    )
+}
+
+function getUserById(userId, callback) {
+    db.all('SELECT * FROM user WHERE id = ? LIMIT 1', [ userId ], 
+        function(err, users) {
+            callback(err, users[0])
+        }
+    )
+}
+
+function createSessionStore(session) {
+    var SQLiteStore = require('connect-sqlite3')(session)
+    const params = {
+        table:  'sessions',
+        db:     'hanro-sessions.db',
+        dir:    sessionDbDir,
+    }
+    return new SQLiteStore(params)
+}
+
 /*
 async function removeItem(id) {
     return new Promise((acc, rej) => {
@@ -120,5 +147,9 @@ module.exports = {
     getWordDefinitions,
     addWord,
     updateWord,
+
+    getUser,
+    getUserById,
+    createSessionStore,
    // removeItem,
 };

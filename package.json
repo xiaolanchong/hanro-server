@@ -14,7 +14,13 @@
   "author": "Eugene Gorbachev",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
+    "connect": "^3.7.0",
+    "connect-sqlite3": "^0.9.13",
     "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "passport": "^0.5.3",
+    "passport-local": "^1.0.0",
     "sqlite3": "^5.0.8"
   },
   "devDependencies": {
